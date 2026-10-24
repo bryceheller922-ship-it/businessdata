@@ -14,6 +14,8 @@ Next.js 14 App Router, TypeScript, Tailwind CSS, Supabase Auth/Postgres, Stripe 
 4. In Supabase Auth settings set the site URL to your app origin and allow `/auth/callback` as a redirect if using email-confirmation flows. Email/password auth is implemented.
 5. Run `npm run dev`; production uses `npm run build` and `npm start`.
 
+Account creation is configured for immediate access without email confirmation: the server-side `/api/auth/signup` route creates users with Supabase Admin Auth and marks their email confirmed, then signs them in. This requires `SUPABASE_SERVICE_ROLE_KEY` in the server environment. Keep this key private and enable rate limiting/bot protection for public signup traffic in your deployment before opening registration broadly.
+
 The ingestion API uses an OpenAI structured-JSON classifier when `OPENAI_API_KEY` is configured. It has a local lightweight keyword scorer fallback so development ingestion works without an LLM. Send an authenticated POST to `/api/ingest-leads` with `Authorization: Bearer $INGEST_API_SECRET` and a JSON array, e.g. `[ {"competitor":"Acme","platform":"x","handle":"@public_handle","url":"https://x.com/example/status/1","text":"The app is down again and support still has not responded."} ]`. Each mention must map to a competitor name monitored by a user. Publicly available posts only; comply with platform terms and privacy requirements.
 
 The cron handler at `/api/cron/match-alert` requires `Authorization: Bearer $CRON_SECRET`. Vercel supplies `CRON_SECRET` as the authorization bearer automatically for configured crons. It flags qualifying new leads in `lead_alerts` and returns user/email/count details; it does not send an email (wire an email provider before representing alerts as email delivery).
